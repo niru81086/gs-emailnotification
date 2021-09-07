@@ -90,8 +90,8 @@
                         
             steps {              
                   //calling fucntion to build and push docker images
-                imageBuild(imageName)
-                imagePush(imagevmeareExportar)
+                imageBuild(dev,imageName)
+                
 
             }
 
