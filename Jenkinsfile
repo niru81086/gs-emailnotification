@@ -35,7 +35,6 @@
                         deactivate
                    '''    
                 }
-
         }
 // This stage perform UiteTest when there is any new commit on dev branch
         stage('Dev-UnitTest') {
@@ -92,7 +91,8 @@
             steps {              
                   //calling fucntion to build and push docker images
                 imageBuild(dev,imageName)
-                
+                withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+    pushToImage(dev,imageName, dockerUser, dockerPassword)
 
             }
 
