@@ -69,7 +69,7 @@
                 branch 'dev'
             }
             steps {
-                withSonarQubeEnv('sonarserver') {
+           /*     withSonarQubeEnv('sonarserver') {
             sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=pythonProject \
             -Dsonar.sources=calculator/ \
             -Dsonar.tests=mytests/ \
@@ -77,7 +77,8 @@
             -Dsonar.python.flake8.reportPaths=flake8-out.txt \
             -Dsonar.python.xunit.reportPath=nosetests.xml \
             -Dsonar.python.coverage.reportPaths=coverage.xml '''
-                }
+                } */
+                echo "sonascanner"
             }
 
         }
