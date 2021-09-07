@@ -12,6 +12,7 @@
             imageName = "email-consumer"
             qa= 'qa'
             stage= 'stage'
+            dev= 'dev'
             registryCredentials = "Nexus"
             registry = "192.168.0.22:8085/"
             dockerStageImage = ''
