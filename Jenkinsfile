@@ -79,7 +79,9 @@
           # -Dsonar.python.xunit.skipDetails=false \
            '''
                 } 
-                echo "sonascanner"
+                timeout(time: 10, unit: 'MINUTES') {
+                     waitForQualityGate abortPipeline: true
+                }
             }
 
         }
