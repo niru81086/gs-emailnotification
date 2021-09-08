@@ -30,6 +30,7 @@
             agent {label 'slave'}
             steps {
                    sh '''#!/bin/bash
+                   docker rm -f flake8
                    CONTAINER_python=$(docker run -d -t -e PYTHONUNBUFFERED=0 -w /root -v $WORKSPACE:/root  --name flake8 python:3.7-alpine /bin/sh)
                 docker exec -i $CONTAINER_python /bin/sh  -c "pip install flake8 && flake8 --exit-zero --format=pylint  RabbitMQ_Consumer/ >flake8-out.txt"
                        #python3.7 -m virtualenv my-venv 
