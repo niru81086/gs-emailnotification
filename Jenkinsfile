@@ -5,10 +5,7 @@
 // define global agent
     agent {label 'master'}
 
- // to skip deafult beahviure of checkout   
-    options {
-        skipDefaultCheckout true
-    }
+ 
 // define environment variable 
         environment {
             scannerHome = tool 'sonar4.6'
@@ -114,9 +111,11 @@
 // Build and push docker images for QA env This stage execute when there is new commit and dev branch merge to QA
         stage('QA-BuildImage') {
             when {
-                branch 'stage'
+                branch 'qa'
             }
             agent {label 'slave'}
+            // to skip deafult beahviure of checkout   
+    
             steps {
             /*    script {
                 dockerQAImage = docker.build imageName
@@ -141,6 +140,10 @@
                 branch 'qa'
             }
             agent {label 'slave'}
+            // to skip deafult beahviure of checkout   
+    options {
+        skipDefaultCheckout true
+    }
 
             steps {
                 echo "DeployDockerImage on qaf"
@@ -154,6 +157,10 @@
             }
  // define agent to run stage on specific agent           
           agent {label 'slave'}   
+          // to skip deafult beahviure of checkout   
+    options {
+        skipDefaultCheckout true
+    }
             
             
             steps {
