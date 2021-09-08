@@ -24,11 +24,13 @@
     stages {
         stage('Dev-StaticCodeAnalysis') {
             when {
-                branch 'dev'
+                branch 'qa'
+                beforeAgent true
             }
+            agent {label 'slave'}
             steps {
                    sh '''#!/bin/bash
-                   CONTAINER_python=$(docker run -d -t -e PYTHONUNBUFFERED=0 -w /root -v $WORKSPACE:/root  --name flake8 3.7-alpine /bin/sh)
+                   CONTAINER_python=$(docker run -d -t -e PYTHONUNBUFFERED=0 -w /root -v $WORKSPACE:/root  --name flake8 python:3.7-alpine /bin/sh)
                 docker exec -i $CONTAINER_python /bin/bash -x -c "pip install -r requirements.txt && flake8 --format=pylint  RabbitMQ_Consumer/ >flake8-out.txt
                    /*     python3.7 -m virtualenv my-venv 
                         source  my-venv/bin/activate
