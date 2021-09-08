@@ -144,7 +144,7 @@
             }
 
         }
-// Deploy application on QA env This stage execute when there is new commit and dev branch merge to QA
+// Deploy application on QA env This stage execute when there is new commit and dev branch merge to .
         stage('QA-Deploy') {
             when {
                 branch 'qa'
