@@ -112,6 +112,7 @@
         stage('QA-BuildImage') {
             when {
                 branch 'qa'
+                beforeAgent true
             }
             agent {label 'slave'}
             // to skip deafult beahviure of checkout   
@@ -138,12 +139,11 @@
         stage('QA-Deploy') {
             when {
                 branch 'qa'
+                beforeAgent true
             }
             agent {label 'slave'}
             // to skip deafult beahviure of checkout   
-    options {
-        skipDefaultCheckout true
-    }
+    
 
             steps {
                 echo "DeployDockerImage on qaf"
@@ -153,14 +153,13 @@
 // This stage perform Selenuim test cases
         stage('QA-Selenimumtest') {
             when {
+                beforeAgent true
                 branch 'qa'
             }
  // define agent to run stage on specific agent           
           agent {label 'slave'}   
           // to skip deafult beahviure of checkout   
-    options {
-        skipDefaultCheckout true
-    }
+    
             
             
             steps {
@@ -185,6 +184,7 @@ docker rm $CONTAINER_python $CONTAINER_selenium
     // Build and push docker images for Stage env This stage execute when there is new commit  QA branch merge to Master    
         stage('Staging-BuildImage') {
             when {
+                beforeAgent true
                 branch 'stage'
             }           
            agent {label 'slave'}  
@@ -202,6 +202,7 @@ docker rm $CONTAINER_python $CONTAINER_selenium
     // This stage wait for approval and once approve application deploy on stage env ss 
         stage('Staging-Deploy') {
             when {
+                beforeAgent true
                 branch 'master'
             }           
            
@@ -216,6 +217,7 @@ docker rm $CONTAINER_python $CONTAINER_selenium
 
         stage('Prod-Deploy') {
             when {
+                beforeAgent true
                 branch 'master'
             }
                                     
