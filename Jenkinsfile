@@ -79,6 +79,8 @@
           # -Dsonar.python.xunit.skipDetails=false \
            '''
                 } 
+                // abourt job if QualityGate fail.
+            
                 timeout(time: 10, unit: 'MINUTES') {
                      waitForQualityGate abortPipeline: true
                 }
