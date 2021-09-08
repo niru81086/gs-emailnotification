@@ -3,8 +3,9 @@
 
  pipeline {
 // define global agent
-    agent {label 'master'
-        
+    agent {label 'master'}
+    options {
+        skipDefaultCheckout true
     }
 // define environment variable 
         environment {
