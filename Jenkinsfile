@@ -45,7 +45,7 @@
                 /*
                  sh '''#!/bin/bash -x
                         python3.7 -m virtualenv my-venv 
-                         source  my-venv/bin/activate
+                        source  my-venv/bin/activate
                         pip install -r requirements.txt                   
                         pytest -v -o junit_family=xunit1 --cov=. --cov-report xml:coverage.xml --junitxml=nosetests.xml
                         deactivate
@@ -69,15 +69,16 @@
                 branch 'dev'
             }
             steps {
-           /*     withSonarQubeEnv('sonarserver') {
-            sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=pythonProject \
-            -Dsonar.sources=calculator/ \
-            -Dsonar.tests=mytests/ \
+               withSonarQubeEnv('sonarserver') {
+            sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
+            -Dsonar.sources=RabbitMQ_Consumer/ \
+            -Dsonar.tests=RabbitMQ_Consumer\ConsumerEx/ \
             -Dsonar.python.xunit.skipDetails=false \
             -Dsonar.python.flake8.reportPaths=flake8-out.txt \
-            -Dsonar.python.xunit.reportPath=nosetests.xml \
-            -Dsonar.python.coverage.reportPaths=coverage.xml '''
-                } */
+           # -Dsonar.python.xunit.reportPath=nosetests.xml \
+           # -Dsonar.python.coverage.reportPaths=coverage.xml 
+           '''
+                } 
                 echo "sonascanner"
             }
 
@@ -92,7 +93,7 @@
                   //calling fucntion to build and push docker images
                 imageBuild(dev,imageName)
                 withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-    pushToImage(dev,imageName, dockerUser, dockerPassword)
+                     pushToImage(dev,imageName, dockerUser, dockerPassword)
                 }
             }
 
@@ -124,7 +125,7 @@
               
                     imageBuild(qa,imageName)
                     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-    pushToImage(qa,imageName, dockerUser, dockerPassword)
+                        pushToImage(qa,imageName, dockerUser, dockerPassword)
 }
                     
                 
