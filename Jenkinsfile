@@ -72,11 +72,12 @@
                withSonarQubeEnv('sonarserver') {
             sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
             -Dsonar.sources=RabbitMQ_Consumer/ \
-           # -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
+           
             -Dsonar.python.xunit.skipDetails=false \
             -Dsonar.python.flake8.reportPaths=flake8-out.txt \
            # -Dsonar.python.xunit.reportPath=nosetests.xml \
            # -Dsonar.python.coverage.reportPaths=coverage.xml 
+           # -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
            '''
                 } 
                 echo "sonascanner"
