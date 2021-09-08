@@ -4,6 +4,8 @@
  pipeline {
 // define global agent
     agent {label 'master'}
+
+ // to skip deafult beahviure of checkout   
     options {
         skipDefaultCheckout true
     }
