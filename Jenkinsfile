@@ -24,7 +24,7 @@
     stages {
         stage('Dev-StaticCodeAnalysis') {
             when {
-                branch 'qa'
+                branch 'dev'
                 beforeAgent true
             }
             agent {label 'slave'}
