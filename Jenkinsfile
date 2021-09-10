@@ -209,7 +209,7 @@ docker rm $CONTAINER_python $CONTAINER_selenium
             }
 
         }
-    // This stage wait for approval and once approve application deploy on stage env ss 
+    // This stage wait for approval and once approve application deploy on stage env ss jj
         stage('Staging-Deploy') {
             when {
                 beforeAgent true
