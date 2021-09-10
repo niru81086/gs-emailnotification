@@ -213,7 +213,7 @@ docker rm $CONTAINER_python $CONTAINER_selenium
         stage('Staging-Deploy') {
             when {
                 beforeAgent true
-                branch 'master'
+                buildingTag()
             }           
            
             steps {
