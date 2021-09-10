@@ -6,7 +6,7 @@
     agent {label 'master'}
 
  
-// define environment variable 
+// define environment variable jj
         environment {
             scannerHome = tool 'sonar4.6'
             imageName = "email-consumer"
