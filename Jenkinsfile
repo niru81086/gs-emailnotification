@@ -46,7 +46,10 @@
         stage('Dev-UnitTest') {
             when {
                 branch 'dev'
+             beforeAgent true
             }
+            agent {label 'slave'}
+            options { skipDefaultCheckout() }
             steps {
                 /*
                  sh '''#!/bin/bash -x
@@ -73,7 +76,10 @@
         stage('Dev-PublishToSonarQube') {
             when {
                 branch 'dev'
+             beforeAgent true
             }
+            agent {label 'slave'}
+            options { skipDefaultCheckout() }
             steps {
                withSonarQubeEnv('sonarserver') {
             sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
@@ -97,8 +103,11 @@
         stage('Dev-BuildDockerImage') {
             when {
                 branch 'dev'
+             beforeAgent true
             }
-                        
+            agent {label 'slave'}
+            options { skipDefaultCheckout() }
+                       
             steps {              
                   //calling fucntion to build and push docker images
                 imageBuild(dev,imageName)
