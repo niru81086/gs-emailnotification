@@ -114,7 +114,12 @@
                 branch 'dev'
             }
             steps {
-                echo "deploy on dev"
+                 sshagent(['ssh-agent']) {
+                    sh "scp -o StrictHostkeyChecking=no deployment/email-notification.yaml deployment/rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/"
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/"                    
+ 
+            }
+
             }
 
         }
