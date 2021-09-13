@@ -150,6 +150,7 @@
                     imageBuild(qa,imageName)
                     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                         pushToImage(qa,imageName, dockerUser, dockerPassword)
+                        deleteImages()
 }
                     
                 
@@ -277,10 +278,17 @@ void pushToImage(env,imageName, dockerUser, dockerPassword) {
     sh "docker tag $env-$imageName:${BUILD_NUMBER} 192.168.0.5:8050/$env-$imageName:${BUILD_NUMBER}"
     sh "docker tag $env-$imageName:${BUILD_NUMBER} 192.168.0.5:8050/$env-$imageName:latest"
     sh "docker push 192.168.0.5:8050/$env-$imageName:${BUILD_NUMBER}"
+    echo "Image Push 192.168.0.5:8050/$env-$imageName:${BUILD_NUMBER} cpmoleted"
     sh "docker push 192.168.0.5:8050/$env-$imageName:latest"
+    echo "Image Push 192.168.0.5:8050/$env-$imageName:latest cpmoleted"
     
-    echo "Image push complete"
-}    
+}
+void deleteImages() {
+    sh "docker rmi 192.168.0.5:8050/$env-$imageName:latest"
+    sh "docker rmi 192.168.0.5:8050/$env-$imageName:${BUILD_NUMBER}"
+    echo "Images deleted"
+    
+}   
 
 //read versionTag
 void versiontags() {
