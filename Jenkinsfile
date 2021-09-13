@@ -110,6 +110,7 @@
                 imageBuild(dev,imageName)
                 withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                      pushToImage(dev,imageName, dockerUser, dockerPassword)
+                     deleteImages()
                 }
             }
 
