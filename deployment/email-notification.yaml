@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emailnotification
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: emailnotification
+  template:
+    metadata:
+      labels:
+        app: emailnotification
+    spec:
+      containers:
+        - name: emailnotification
+          imagePullPolicy: IfNotPresent
+          image: 192.168.0.5:8050/dev-email-consumer
+          ports:
+            - containerPort: 8089
+      imagePullSecrets:
+        - name: nexnus-repo
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: emailnotification
+spec:
+
+  ports:
+    - port: 8089
+      targetPort: 8089
+  selector:
+    app: emailnotification
