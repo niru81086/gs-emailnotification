@@ -76,10 +76,7 @@
         stage('Dev-PublishToSonarQube') {
             when {
                 branch 'dev'
-             beforeAgent true
             }
-            agent {label 'slave'}
-            options { skipDefaultCheckout() }
             steps {
                withSonarQubeEnv('sonarserver') {
             sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
@@ -90,7 +87,7 @@
            # -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
           # -Dsonar.python.xunit.skipDetails=false \
            '''
-                } 
+            } 
                 // abourt job if QualityGate fail.
             
                 timeout(time: 10, unit: 'MINUTES') {
