@@ -171,7 +171,7 @@
             steps {
                     sh'''#/bin/bash -x
                     
-                    "sed  's/imagename/$registry\\/$qa/g'  deployment/email-notification.yaml >  deployment/qa-email-notification.yaml"
+                    "sed  's/imagename/$registry\\/$qa/g'  $WORKSPACE/deployment/email-notification.yaml >  $WORKSPACE/deployment/qa-email-notification.yaml"
                     '''
                      sshagent(['ssh-agent']) {
                     sh "scp -o StrictHostkeyChecking=no deployment/email-notification.yaml deployment/rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
