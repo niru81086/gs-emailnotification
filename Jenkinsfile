@@ -164,7 +164,7 @@
                 beforeAgent true
             }
             agent {label 'slave'}
-            options { skipDefaultCheckout() }
+            
             // to skip deafult beahviure of checkout   
     
 
