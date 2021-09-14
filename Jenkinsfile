@@ -4,8 +4,6 @@
  pipeline {
 // define global agent
     agent {label 'master'}
-
- 
 // define environment variable 
         environment {
             scannerHome = tool 'sonar4.6'
@@ -18,7 +16,6 @@
             dockerStageImage = ''
             dockerQAImage = ''
             versionTags= versiontags()
-            
         }
  // This stage perform flake8 analysis when there is any new commit on dev branch dd          
     stages {
@@ -32,14 +29,13 @@
                    sh '''#!/bin/bash
                    docker rm -f flake8
                    CONTAINER_python=$(docker run -d -t -e PYTHONUNBUFFERED=0 -w /root -v $WORKSPACE:/root  --name flake8 python:3.7-alpine /bin/sh)
-                docker exec -i $CONTAINER_python /bin/sh  -c "pip install flake8 && flake8 --exit-zero --format=pylint  RabbitMQ_Consumer/ >flake8-out.txt"
+                    docker exec -i $CONTAINER_python /bin/sh  -c "pip install flake8 && flake8 --exit-zero --format=pylint  RabbitMQ_Consumer/ >flake8-out.txt"
                        #python3.7 -m virtualenv my-venv 
                         #source  my-venv/bin/activate
                         #ip install flake8
                         #flake8 --format=pylint  RabbitMQ_Consumer/ >flake8-out.txt
                         #deactivate
-                        
-                   '''    
+                      '''    
                 }
         }
 // This stage perform UiteTest when there is any new commit on dev branch
@@ -78,23 +74,22 @@
                 branch 'dev'
             }
             steps {
-               withSonarQubeEnv('sonarserver') {
-            sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
-            -Dsonar.sources=RabbitMQ_Consumer/ \
-            -Dsonar.python.flake8.reportPaths=flake8-out.txt \
-           # -Dsonar.python.xunit.reportPath=nosetests.xml \
-           # -Dsonar.python.coverage.reportPaths=coverage.xml 
-           # -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
-          # -Dsonar.python.xunit.skipDetails=false \
-           '''
-            } 
+                withSonarQubeEnv('sonarserver') {
+                     sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
+                     -Dsonar.sources=RabbitMQ_Consumer/ \
+                    -Dsonar.python.flake8.reportPaths=flake8-out.txt \
+                    # -Dsonar.python.xunit.reportPath=nosetests.xml \
+                     # -Dsonar.python.coverage.reportPaths=coverage.xml 
+                    # -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
+                    # -Dsonar.python.xunit.skipDetails=false \
+                        '''
+                } 
                 // abourt job if QualityGate fail.
             
                 timeout(time: 10, unit: 'MINUTES') {
                      waitForQualityGate abortPipeline: true
                 }
             }
-
         }
     // Build and push docker images for dev env
         stage('Dev-BuildDockerImage') {
@@ -125,11 +120,8 @@
                     sh "scp -o StrictHostkeyChecking=no deployment/email-notification.yaml deployment/rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/rabbitmq-deploy.yaml -n=dev"  
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/email-notification.yaml -n=dev"                    
- 
                 }
-
             }
-
         }
 // Build and push docker images for QA env This stage execute when there is new commit and dev branch merge t QA
         stage('QA-BuildImage') {
@@ -139,7 +131,7 @@
             }
             agent {label 'slave'}
             // to skip deafult beahviure of checkout   
-    
+
             steps {
                 /*    script {
                 dockerQAImage = docker.build imageName
@@ -165,9 +157,13 @@
             agent {label 'slave'}
             // to skip deafult beahviure of checkout   
     
-
             steps {
-                echo "DeployDockerImage on qaf"
+
+                sh "sed "s/imagename/$qa/g" deployment/email-notification.yaml > deployment/qa-email-notification.yaml"
+                sshagent(['ssh-agent']) {
+                    sh "scp -o StrictHostkeyChecking=no deployment/email-notification.yaml deployment/rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/rabbitmq-deploy.yaml -n=qa"  
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/email-notification.yaml -n=qa"
             }
 
         }
