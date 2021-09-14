@@ -169,10 +169,8 @@
     
 
             steps {
-                    sh'''#/bin/bash -x
-                    
-                    "sed  's/imagename/$registry\\/$qa/g'  $WORKSPACE/deployment/email-notification.yaml >  $WORKSPACE/deployment/qa-email-notification.yaml"
-                    '''
+                    sh "chmod +x deployment/changeVariable.sh"
+                     sh "./deployment/changeVariable.sh $registry $qa-$imageName"
                      sshagent(['ssh-agent']) {
                     sh "scp -o StrictHostkeyChecking=no deployment/email-notification.yaml deployment/rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/rabbitmq-deploy.yaml -n=dev"  
