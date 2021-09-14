@@ -138,6 +138,7 @@
                 beforeAgent true
             }
             agent {label 'slave'}
+            
             // to skip deafult beahviure of checkout   
     
             steps {
@@ -163,6 +164,7 @@
                 beforeAgent true
             }
             agent {label 'slave'}
+            options { skipDefaultCheckout() }
             // to skip deafult beahviure of checkout   
     
 
@@ -178,7 +180,8 @@
                 branch 'qa'
             }
                 // define agent to run stage on specific agent           
-          agent {label 'slave'}   
+          agent {label 'slave'}
+            options { skipDefaultCheckout() }   
             // to skip deafult beahviure of checkout   
             steps {
 
