@@ -1,0 +1,13 @@
+pip install kombu
+pip install rabbitMQ
+
+you need to change rabbit_url in views.py file
+
+In config.ini : Need to add gmail credentials
+
+This application will run continously. For access this data you need to hit url like : http://HostName:PostNo
+
+Currently config.ini, readconfig.py, consumer.py file in same directory.
+
+
+
