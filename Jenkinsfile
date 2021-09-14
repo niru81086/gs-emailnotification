@@ -170,11 +170,11 @@
 
             steps {
                     sh "chmod +x deployment/changeVariable.sh"
-                     sh "./deployment/changeVariable.sh $registry $qa-$imageName"
+                     sh "./deployment/changeVariable.sh $registry $qa-$imageName 30001"
                      sshagent(['ssh-agent']) {
                     sh "scp -o StrictHostkeyChecking=no deployment/email-notification.yaml deployment/rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
-                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/rabbitmq-deploy.yaml -n=$qa"  
-                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/email-notification.yaml -n=$qa"                    
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/rabbitmq-deploy.yaml -n=qa"  
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/qa-email-notification.yaml -n=qa"                    
  
                 }
             }
