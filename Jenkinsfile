@@ -168,7 +168,7 @@
             agent {label 'slave'}
             options { skipDefaultCheckout() } 
             
-            // to skip deafult beahviure of checkout   
+            // to skip deafult beahviure of checkout   k
     
 
             steps {
@@ -201,9 +201,9 @@
             CONTAINER_selenium=$(docker run -d --name selenium -p 4444:4444 selenium/standalone-chrome)
             CONTAINER_python=$(docker run -d -t -e PYTHONUNBUFFERED=0 -w /root -v $WORKSPACE:/root --link selenium:selenium --name python python:3.7 /bin/bash)
             docker exec -i $CONTAINER_python /bin/bash -x -c "pip install -r requirements.txt &&  pytest -v -s --alluredir="Testcases/allureReport" -c Testcases/pytest.ini"
-            docker logs $CONTAINER_python
-            docker stop $CONTAINER_python $CONTAINER_selenium
-            docker rm $CONTAINER_python $CONTAINER_selenium
+            #docker logs $CONTAINER_python
+            #docker stop $CONTAINER_python $CONTAINER_selenium
+            docker rm -f $CONTAINER_python $CONTAINER_selenium
             '''             }
                     // post success above steps publish allure report using allure plugin
                 post {
