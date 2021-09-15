@@ -9,7 +9,7 @@
 // define environment variable 
         environment {
             scannerHome = tool 'sonar4.6'
-            imageName = "email-consumer"
+            imageName = "email-connotification"
             qa= 'qa'
             stage= 'stage'
             dev= 'dev'
@@ -121,10 +121,12 @@
                 branch 'dev'
             }
             steps {
-                sshagent(['ssh-agent']) {
-                    sh "scp -o StrictHostkeyChecking=no deployment/email-notification.yaml deployment/rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
-                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/rabbitmq-deploy.yaml -n=dev"  
-                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/email-notification.yaml -n=dev"                    
+                 sh "chmod +x deployment/changeVariable.sh"
+                     sh "./deployment/changeVariable.sh $registry $dev-$imageName 30000 dev"
+                     sshagent(['ssh-agent']) {
+                    sh "scp -o StrictHostkeyChecking=no deployment/dev-email-notification.yaml deployment/dev-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/dev-rabbitmq-deploy.yaml -n=dev"  
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/dev-email-notification.yaml -n=dev"                    
  
                 }
 
@@ -164,6 +166,7 @@
                 beforeAgent true
             }
             agent {label 'slave'}
+            options { skipDefaultCheckout() } 
             
             // to skip deafult beahviure of checkout   
     
@@ -172,7 +175,7 @@
                     sh "chmod +x deployment/changeVariable.sh"
                      sh "./deployment/changeVariable.sh $registry $qa-$imageName 30001 qa"
                      sshagent(['ssh-agent']) {
-                    sh "scp -o StrictHostkeyChecking=no deployment/$qa-$imageName.yaml deployment/qa-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
+                    sh "scp -o StrictHostkeyChecking=no deployment/qa-email-notification.yaml deployment/qa-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/qa-rabbitmq-deploy.yaml -n=qa"  
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/qa-email-notification.yaml -n=qa"                    
  
@@ -217,12 +220,15 @@
             }           
            agent {label 'slave'}  
             steps {
-                sh "docker login 192.168.0.5:8050 -u admin -p niru@123"
-                sh "docker pull 192.168.0.5:8050/$qa-$imageName:latest"
-                sh "docker tag 192.168.0.5:8050/$qa-$imageName:latest 192.168.0.5:8050/$stage-$imageName:$versionTags" 
-                sh "docker push 192.168.0.5:8050/$stage-$imageName:$versionTags"              
-                    echo "$versionTags"
-                    echo "${versionTags}"                       
+
+                 withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+                    sh "docker login $registry -u admin -p niru@123"
+                 }      
+                sh "docker login $registry -u $dockerUser -p $dockerPassword"
+                sh "docker pull $registry/$qa-$imageName:latest"
+                sh "docker tag $registry/$qa-$imageName:latest $registry/$stage-$imageName:$versionTags" 
+                sh "docker push $registry/$stage-$imageName:$versionTags"              
+                                           
             }
         }
     // This stage wait for approval and once approve application deploy on stage env ss 
