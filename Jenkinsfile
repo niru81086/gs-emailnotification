@@ -9,7 +9,7 @@
 // define environment variable 
         environment {
             scannerHome = tool 'sonar4.6'
-            imageName = "email-connotification"
+            imageName = "email-notification"
             qa= 'qa'
             stage= 'stage'
             dev= 'dev'
