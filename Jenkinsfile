@@ -215,7 +215,7 @@ pipeline {
         stage('Staging-BuildImage') {
             when {
                 beforeAgent true
-                branch 'stage'
+                branch 'master'
             }           
            agent {label 'slave'}  
             steps {
