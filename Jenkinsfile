@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy   
 @Library('myshared-library')_
 
- pipeline {
+pipeline {
 // define global agent
     agent {label 'master'}
 
@@ -9,12 +9,12 @@
 // define environment variable 
         environment {
             scannerHome = tool 'sonar4.6'
-            imageName = "email-consumer"
+            imageName = "email-notification"
             qa= 'qa'
             stage= 'stage'
             dev= 'dev'
             registryCredentials = "Nexus"
-            registry = "192.168.0.22:8085/"
+            registry = "192.168.0.5:8050"
             dockerStageImage = ''
             dockerQAImage = ''
             versionTags= versiontags()
@@ -40,13 +40,16 @@
                         #deactivate
                         
                    '''    
-                }
+            }
         }
 // This stage perform UiteTest when there is any new commit on dev branch
         stage('Dev-UnitTest') {
             when {
                 branch 'dev'
+                beforeAgent true
             }
+            agent {label 'slave'}
+            options { skipDefaultCheckout() }
             steps {
                 /*
                  sh '''#!/bin/bash -x
@@ -64,10 +67,8 @@
 /*            post {
                 success {
                          recordIssues(tools: [junitParser(pattern: 'nosetests.xml')])
-                }
-               
-            }
-            */
+                }               
+            } */
         }
 // Scanning source code using sonarqube scannerand pubilsh reports to sonar server
         stage('Dev-PublishToSonarQube') {
@@ -76,14 +77,15 @@
             }
             steps {
                withSonarQubeEnv('sonarserver') {
-            sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
-            -Dsonar.sources=RabbitMQ_Consumer/ \
-            -Dsonar.python.flake8.reportPaths=flake8-out.txt \
-           # -Dsonar.python.xunit.reportPath=nosetests.xml \
-           # -Dsonar.python.coverage.reportPaths=coverage.xml 
-           # -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
-          # -Dsonar.python.xunit.skipDetails=false \
-           '''
+                        sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
+                        -Dsonar.sources=RabbitMQ_Consumer/ \
+                        -Dsonar.python.flake8.reportPaths=flake8-out.txt \
+                        # -Dsonar.python.xunit.reportPath=nosetests.xml \
+                        # -Dsonar.python.coverage.reportPaths=coverage.xml 
+                        # -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
+                        # -Dsonar.python.xunit.skipDetails=false \
+                          '''
+
                 } 
                 // abourt job if QualityGate fail.
             
@@ -97,16 +99,19 @@
         stage('Dev-BuildDockerImage') {
             when {
                 branch 'dev'
+                beforeAgent true
             }
-                        
+            agent {label 'slave'}
+            options { skipDefaultCheckout() }
+                       
             steps {              
                   //calling fucntion to build and push docker images
                 imageBuild(dev,imageName)
-                withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-                     pushToImage(dev,imageName, dockerUser, dockerPassword)
+                withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) { 
+                     pushToImage(registry,dev,imageName, dockerUser, dockerPassword)
+                     deleteImages(registry,dev,imageName)
                 }
             }
-
         }
 // deploy dev application on kubernets
         stage('Dev-Deploy') {
@@ -114,21 +119,27 @@
                 branch 'dev'
             }
             steps {
-                echo "deploy on dev"
+                 sh "chmod +x deployment/changeVariable.sh"
+                     sh "./deployment/changeVariable.sh $registry $dev-$imageName 30000 dev"
+                sshagent(['ssh-agent']) {
+                    sh "scp -o StrictHostkeyChecking=no deployment/dev-email-notification.yaml deployment/dev-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/dev-rabbitmq-deploy.yaml -n=dev"  
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/dev-email-notification.yaml -n=dev"                    
+                }
             }
-
         }
-// Build and push docker images for QA env This stage execute when there is new commit and dev branch merge to QA
+
+// Build and push docker images for QA env This stage execute when there is new 
         stage('QA-BuildImage') {
             when {
                 branch 'qa'
                 beforeAgent true
             }
-            agent {label 'slave'}
+            agent {label 'slave'}            
             // to skip deafult beahviure of checkout   
     
             steps {
-            /*    script {
+                /*    script {
                 dockerQAImage = docker.build imageName
                     docker.withRegistry( 'http://'+registry, registryCredentials ) {
                          dockerQAImage.push('latest')
@@ -138,12 +149,10 @@
               
                     imageBuild(qa,imageName)
                     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-                        pushToImage(qa,imageName, dockerUser, dockerPassword)
-}
-                    
-                
+                        pushToImage(registry,qa,imageName, dockerUser, dockerPassword)
+                        deleteImages(registry,qa,imageName)
+                    }                                 
             }
-
         }
 // Deploy application on QA env This stage execute when there is new commit and dev branch merge to .
         stage('QA-Deploy') {
@@ -152,46 +161,57 @@
                 beforeAgent true
             }
             agent {label 'slave'}
-            // to skip deafult beahviure of checkout   
+            options { skipDefaultCheckout() } 
+            // to skip deafult beahviure of checkout   k
     
 
             steps {
-                echo "DeployDockerImage on qaf"
+                    sh "chmod +x deployment/changeVariable.sh"
+                     sh "./deployment/changeVariable.sh $registry $qa-$imageName 30001 qa"
+                sshagent(['ssh-agent']) {
+                    sh "scp -o StrictHostkeyChecking=no deployment/qa-email-notification.yaml deployment/qa-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/qa-rabbitmq-deploy.yaml -n=qa"  
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/qa-email-notification.yaml -n=qa"                    
+ 
+                }
             }
 
         }
-// This stage perform Selenuim test cases
+            // This stage perform Selenuim test cases
+
         stage('QA-Selenimumtest') {
             when {
                 beforeAgent true
                 branch 'qa'
             }
- // define agent to run stage on specific agent           
-          agent {label 'slave'}   
-          // to skip deafult beahviure of checkout   
-    
-            
-            
+
+                // define agent to run stage on specific agent           
+                agent {label 'slave'}
+                    options { skipDefaultCheckout() }   
+            // to skip deafult beahviure of checkout   
             steps {
 
-// Below code create selenuim and python container and execute selenium pytest code on pyton container 
-             sh'''#!/bin/bash -x
+                // Below code create selenuim and python container and execute selenium pytest code on pyton container 
+                sh'''#!/bin/bash -x
                 
-CONTAINER_selenium=$(docker run -d --name selenium -p 4444:4444 selenium/standalone-chrome)
-CONTAINER_python=$(docker run -d -t -e PYTHONUNBUFFERED=0 -w /root -v $WORKSPACE:/root --link selenium:selenium --name python python:3.7 /bin/bash)
-docker exec -i $CONTAINER_python /bin/bash -x -c "pip install -r requirements.txt &&  pytest -v -s --alluredir="Testcases/allureReport" -c Testcases/pytest.ini"
-docker logs $CONTAINER_python
-docker stop $CONTAINER_python $CONTAINER_selenium
-docker rm $CONTAINER_python $CONTAINER_selenium
- '''             }
-// post success above steps publish allure report using allure plugin
-            post {
-            success {
-                    allure includeProperties: false, jdk: '', results: [[path: 'Testcases/allureReport']]
-                }
-            }    
+                CONTAINER_selenium=$(docker run -d --name selenium -p 4444:4444 selenium/standalone-chrome)
+                CONTAINER_python=$(docker run -d -t -e PYTHONUNBUFFERED=0 -w /root -v $WORKSPACE:/root --link selenium:selenium --name python python:3.7 /bin/bash)
+                docker exec -i $CONTAINER_python /bin/bash -x -c "pip install -r requirements.txt &&  pytest -v -s --alluredir="Testcases/allureReport" -c Testcases/pytest.ini"
+                #docker logs $CONTAINER_python
+                #docker stop $CONTAINER_python $CONTAINER_selenium
+                docker rm -f $CONTAINER_python $CONTAINER_selenium
+            '''             
+            }
+                    // post success above steps publish allure report using allure plugin
+                post {
+                    success {
+                        allure includeProperties: false, jdk: '', results: [[path: 'Testcases/allureReport']]
+                    }
+
+                }    
         } 
-    // Build and push docker images for Stage env This stage execute when there is new commit  QA branch merge to Master    
+            // Build and push docker images for Stage env This stage execute when there is new commit  QA branch merge to Master    
+
         stage('Staging-BuildImage') {
             when {
                 beforeAgent true
@@ -199,30 +219,33 @@ docker rm $CONTAINER_python $CONTAINER_selenium
             }           
            agent {label 'slave'}  
             steps {
-                sh "docker login 192.168.0.5:8050 -u admin -p niru@123"
-                sh "docker pull 192.168.0.5:8050/$qa-$imageName:latest"
-                sh "docker tag 192.168.0.5:8050/$qa-$imageName:latest 192.168.0.5:8050/$stage-$imageName:$versionTags" 
-                sh "docker push 192.168.0.5:8050/$stage-$imageName:$versionTags"              
-                    echo "$versionTags"
-                    echo "${versionTags}"                   
-                
+                 withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+                    sh "docker login $registry -u $dockerUser -p $dockerPassword"
+                    sh "docker pull $registry/$qa-$imageName:latest"
+                    sh "docker tag $registry/$qa-$imageName:latest $registry/$stage-$imageName:$versionTags" 
+                    sh "docker push $registry/$stage-$imageName:$versionTags" 
+                 }                                                 
             }
-
         }
-    // This stage wait for approval and once approve application deploy on stage env ss jj
+    // This stage wait for approval and once approve application deploy on stage env ss 
         stage('Staging-Deploy') {
             when {
                 beforeAgent true
-                buildingTag()
+                branch 'master'
             }           
            
             steps {
-               
-               // Wating for approval
+                    // Wating for approval
                     input 'Prod deployment?'
+                    sh "chmod +x deployment/changeVariable.sh"
+                    sh "./deployment/changeVariable.sh $registry $stage-$imageName 30002 stage"
+                sshagent(['ssh-agent']) {
+                    sh "scp -o StrictHostkeyChecking=no deployment/stage-email-notification.yaml deployment/stage-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/stage-rabbitmq-deploy.yaml -n=stage"  
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/stage-email-notification.yaml -n=stage"
+                }
             }
-
-        }
+        }    
 
 
         stage('Prod-Deploy') {
@@ -232,16 +255,15 @@ docker rm $CONTAINER_python $CONTAINER_selenium
             }
                                     
             steps {
-        // waiting for approval        
+
+                        // waiting for approval        
                 input 'Prod deployment?'
-                // deploy on production
-                //calling 
-                
+                        // deploy on production
+                     //calling 
             }        
         }
+    }        
 
-        
-    }
  // This post stage run always and send email wih job status   
         post {
             always {
@@ -260,21 +282,25 @@ void imageBuild(env,imageName) {
 }
 
 // define function to push imagesa
-void pushToImage(env,imageName, dockerUser, dockerPassword) {
+
+void pushToImage(registry,env,imageName, dockerUser, dockerPassword) {
     
-    sh "docker login 192.168.0.5:8050 -u $dockerUser -p $dockerPassword" 
-    sh "docker tag $env-$imageName:${BUILD_NUMBER} 192.168.0.5:8050/$env-$imageName:${BUILD_NUMBER}"
-    sh "docker tag $env-$imageName:${BUILD_NUMBER} 192.168.0.5:8050/$env-$imageName:latest"
-    sh "docker push 192.168.0.5:8050/$env-$imageName:${BUILD_NUMBER}"
-    sh "docker push 192.168.0.5:8050/$env-$imageName:latest"
-    
-    echo "Image push complete"
-}    
+    sh "docker login $registry -u $dockerUser -p $dockerPassword" 
+    sh "docker tag $env-$imageName:${BUILD_NUMBER} $registry/$env-$imageName:${BUILD_NUMBER}"
+    sh "docker tag $env-$imageName:${BUILD_NUMBER} $registry/$env-$imageName:latest"
+    sh "docker push $registry/$env-$imageName:${BUILD_NUMBER}"
+    echo "Image Push $registry/$env-$imageName:${BUILD_NUMBER} cpmoleted"
+    sh "docker push $registry/$env-$imageName:latest"
+    echo "Image Push $registry/$env-$imageName:latest cpmoleted"
+}
+void deleteImages(registry,env,imageName) {
+    sh "docker rmi $registry/$env-$imageName:latest"
+    sh "docker rmi $registry/$env-$imageName:${BUILD_NUMBER}"
+    echo "Images deleted"
+}   
 
 //read versionTag
 void versiontags() {
    def tag= sh script: 'cat versionTags |tail -1', returnStdout: true
    return tag
-
-
 }

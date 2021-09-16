@@ -1,0 +1,15 @@
+FROM python:3.7-slim-buster
+LABEL desc="This iamge for consumer with Django"
+LABEL author="naresh.patil@gslab.com" 
+
+# define working dir
+WORKDIR /app
+
+# copy application code
+COPY  RabbitMQ_Consumer/ .
+
+# install required python modules
+RUN pip3 install -r requirements.txt
+
+#start the Django server
+CMD [ "python3", "manage.py", "runserver", "0.0.0.0:8089"]
