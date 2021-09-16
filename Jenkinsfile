@@ -264,7 +264,7 @@ pipeline {
         }
     }        
 
- // This post stage run always and send email wih job status   
+ // This post stage run always and send email wih job status   he
         post {
             always {
       //Sending email along with build details and log using shared lib function
