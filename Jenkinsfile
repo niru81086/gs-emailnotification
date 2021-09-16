@@ -128,13 +128,8 @@
                 }
             }
         }
-// Build and push docker images for QA env This stage execute when there is new commit and dev branch merge t QA
-=======
-                echo "deploy on dev"
-            }
 
-        }
-// Build and push docker images for QA env This stage execute when there is new {
+// Build and push docker images for QA env This stage execute when there is new 
         stage('QA-BuildImage') {
             when {
                 branch 'qa'
