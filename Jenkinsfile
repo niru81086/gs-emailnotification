@@ -222,8 +222,10 @@ pipeline {
                  withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                     sh "docker login $registry -u $dockerUser -p $dockerPassword"
                     sh "docker pull $registry/$qa-$imageName:latest"
-                    sh "docker tag $registry/$qa-$imageName:latest $registry/$stage-$imageName:$versionTags" 
-                    sh "docker push $registry/$stage-$imageName:$versionTags" 
+                    sh "docker tag $registry/$qa-$imageName:latest $registry/$stage-$imageName:$versionTags"
+                    sh "docker tag $registry/$qa-$imageName:latest $registry/$stage-$imageName:latest"
+                    sh "docker push $registry/$stage-$imageName:$versionTags"
+                     sh "docker push $registry/$stage-$imageName:latest" 
                  }                                                 
             }
         }
