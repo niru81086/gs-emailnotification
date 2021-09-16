@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy   
 @Library('myshared-library')_
 
- pipeline {
+pipeline {
 // define global agent
     agent {label 'master'}
 
@@ -40,7 +40,7 @@
                         #deactivate
                         
                    '''    
-                }
+            }
         }
 // This stage perform UiteTest when there is any new commit on dev branch
         stage('Dev-UnitTest') {
@@ -77,16 +77,16 @@
             }
             steps {
                withSonarQubeEnv('sonarserver') {
-            sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
-            -Dsonar.sources=RabbitMQ_Consumer/ \
-            -Dsonar.python.flake8.reportPaths=flake8-out.txt \
-           # -Dsonar.python.xunit.reportPath=nosetests.xml \
-           # -Dsonar.python.coverage.reportPaths=coverage.xml 
-           # -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
-          # -Dsonar.python.xunit.skipDetails=false \
-           '''
+                        sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
+                        -Dsonar.sources=RabbitMQ_Consumer/ \
+                        -Dsonar.python.flake8.reportPaths=flake8-out.txt \
+                        # -Dsonar.python.xunit.reportPath=nosetests.xml \
+                        # -Dsonar.python.coverage.reportPaths=coverage.xml 
+                        # -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
+                        # -Dsonar.python.xunit.skipDetails=false \
+                          '''
 
-            } 
+                } 
                 // abourt job if QualityGate fail.
             
                 timeout(time: 10, unit: 'MINUTES') {
@@ -121,7 +121,7 @@
             steps {
                  sh "chmod +x deployment/changeVariable.sh"
                      sh "./deployment/changeVariable.sh $registry $dev-$imageName 30000 dev"
-                     sshagent(['ssh-agent']) {
+                sshagent(['ssh-agent']) {
                     sh "scp -o StrictHostkeyChecking=no deployment/dev-email-notification.yaml deployment/dev-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/dev-rabbitmq-deploy.yaml -n=dev"  
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/dev-email-notification.yaml -n=dev"                    
@@ -168,7 +168,7 @@
             steps {
                     sh "chmod +x deployment/changeVariable.sh"
                      sh "./deployment/changeVariable.sh $registry $qa-$imageName 30001 qa"
-                     sshagent(['ssh-agent']) {
+                sshagent(['ssh-agent']) {
                     sh "scp -o StrictHostkeyChecking=no deployment/qa-email-notification.yaml deployment/qa-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/qa-rabbitmq-deploy.yaml -n=qa"  
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/qa-email-notification.yaml -n=qa"                    
@@ -186,21 +186,22 @@
             }
 
                 // define agent to run stage on specific agent           
-          agent {label 'slave'}
-            options { skipDefaultCheckout() }   
+                agent {label 'slave'}
+                    options { skipDefaultCheckout() }   
             // to skip deafult beahviure of checkout   
             steps {
 
                 // Below code create selenuim and python container and execute selenium pytest code on pyton container 
-             sh'''#!/bin/bash -x
+                sh'''#!/bin/bash -x
                 
-            CONTAINER_selenium=$(docker run -d --name selenium -p 4444:4444 selenium/standalone-chrome)
-            CONTAINER_python=$(docker run -d -t -e PYTHONUNBUFFERED=0 -w /root -v $WORKSPACE:/root --link selenium:selenium --name python python:3.7 /bin/bash)
-            docker exec -i $CONTAINER_python /bin/bash -x -c "pip install -r requirements.txt &&  pytest -v -s --alluredir="Testcases/allureReport" -c Testcases/pytest.ini"
-            #docker logs $CONTAINER_python
-            #docker stop $CONTAINER_python $CONTAINER_selenium
-            docker rm -f $CONTAINER_python $CONTAINER_selenium
-            '''             }
+                CONTAINER_selenium=$(docker run -d --name selenium -p 4444:4444 selenium/standalone-chrome)
+                CONTAINER_python=$(docker run -d -t -e PYTHONUNBUFFERED=0 -w /root -v $WORKSPACE:/root --link selenium:selenium --name python python:3.7 /bin/bash)
+                docker exec -i $CONTAINER_python /bin/bash -x -c "pip install -r requirements.txt &&  pytest -v -s --alluredir="Testcases/allureReport" -c Testcases/pytest.ini"
+                #docker logs $CONTAINER_python
+                #docker stop $CONTAINER_python $CONTAINER_selenium
+                docker rm -f $CONTAINER_python $CONTAINER_selenium
+            '''             
+            }
                     // post success above steps publish allure report using allure plugin
                 post {
                     success {
@@ -238,12 +239,13 @@
                     input 'Prod deployment?'
                     sh "chmod +x deployment/changeVariable.sh"
                     sh "./deployment/changeVariable.sh $registry $stage-$imageName 30002 stage"
-                     sshagent(['ssh-agent']) {
+                sshagent(['ssh-agent']) {
                     sh "scp -o StrictHostkeyChecking=no deployment/stage-email-notification.yaml deployment/stage-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/stage-rabbitmq-deploy.yaml -n=stage"  
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/stage-email-notification.yaml -n=stage"
+                }
             }
-        }
+        }    
 
 
         stage('Prod-Deploy') {
@@ -259,7 +261,8 @@
                         // deploy on production
                      //calling 
             }        
-        }    
+        }
+    }        
 
  // This post stage run always and send email wih job status   
         post {
