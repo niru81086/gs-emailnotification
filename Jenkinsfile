@@ -46,7 +46,7 @@
         stage('Dev-UnitTest') {
             when {
                 branch 'dev'
-             beforeAgent true
+                beforeAgent true
             }
             agent {label 'slave'}
             options { skipDefaultCheckout() }
@@ -85,6 +85,7 @@
            # -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
           # -Dsonar.python.xunit.skipDetails=false \
            '''
+
             } 
                 // abourt job if QualityGate fail.
             
@@ -98,7 +99,7 @@
         stage('Dev-BuildDockerImage') {
             when {
                 branch 'dev'
-             beforeAgent true
+                beforeAgent true
             }
             agent {label 'slave'}
             options { skipDefaultCheckout() }
@@ -106,12 +107,11 @@
             steps {              
                   //calling fucntion to build and push docker images
                 imageBuild(dev,imageName)
-                withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+                withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) { 
                      pushToImage(registry,dev,imageName, dockerUser, dockerPassword)
                      deleteImages(registry,dev,imageName)
                 }
             }
-
         }
 // deploy dev application on kubernets
         stage('Dev-Deploy') {
@@ -125,20 +125,22 @@
                     sh "scp -o StrictHostkeyChecking=no deployment/dev-email-notification.yaml deployment/dev-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/dev-rabbitmq-deploy.yaml -n=dev"  
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/dev-email-notification.yaml -n=dev"                    
- 
                 }
-
+            }
+        }
+// Build and push docker images for QA env This stage execute when there is new commit and dev branch merge t QA
+=======
+                echo "deploy on dev"
             }
 
         }
-// Build and push docker images for QA env This stage execute when there is new commit and dev branch merge t QA
+// Build and push docker images for QA env This stage execute when there is new {
         stage('QA-BuildImage') {
             when {
                 branch 'qa'
                 beforeAgent true
             }
-            agent {label 'slave'}
-            
+            agent {label 'slave'}            
             // to skip deafult beahviure of checkout   
     
             steps {
@@ -165,7 +167,6 @@
             }
             agent {label 'slave'}
             options { skipDefaultCheckout() } 
-            
             // to skip deafult beahviure of checkout   k
     
 
@@ -182,11 +183,13 @@
 
         }
             // This stage perform Selenuim test cases
+
         stage('QA-Selenimumtest') {
             when {
                 beforeAgent true
                 branch 'qa'
             }
+
                 // define agent to run stage on specific agent           
           agent {label 'slave'}
             options { skipDefaultCheckout() }   
@@ -212,6 +215,7 @@
                 }    
         } 
             // Build and push docker images for Stage env This stage execute when there is new commit  QA branch merge to Master    
+
         stage('Staging-BuildImage') {
             when {
                 beforeAgent true
@@ -219,7 +223,6 @@
             }           
            agent {label 'slave'}  
             steps {
-
                  withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                     sh "docker login $registry -u $dockerUser -p $dockerPassword"
                     sh "docker pull $registry/$qa-$imageName:latest"
@@ -247,6 +250,7 @@
             }
         }
 
+
         stage('Prod-Deploy') {
             when {
                 beforeAgent true
@@ -254,13 +258,14 @@
             }
                                     
             steps {
+
                         // waiting for approval        
                 input 'Prod deployment?'
                         // deploy on production
                      //calling 
             }        
         }    
-    }
+
  // This post stage run always and send email wih job status   
         post {
             always {
@@ -279,6 +284,7 @@ void imageBuild(env,imageName) {
 }
 
 // define function to push imagesa
+
 void pushToImage(registry,env,imageName, dockerUser, dockerPassword) {
     
     sh "docker login $registry -u $dockerUser -p $dockerPassword" 
@@ -288,19 +294,15 @@ void pushToImage(registry,env,imageName, dockerUser, dockerPassword) {
     echo "Image Push $registry/$env-$imageName:${BUILD_NUMBER} cpmoleted"
     sh "docker push $registry/$env-$imageName:latest"
     echo "Image Push $registry/$env-$imageName:latest cpmoleted"
-    
 }
 void deleteImages(registry,env,imageName) {
     sh "docker rmi $registry/$env-$imageName:latest"
     sh "docker rmi $registry/$env-$imageName:${BUILD_NUMBER}"
     echo "Images deleted"
-    
 }   
 
 //read versionTag
 void versiontags() {
    def tag= sh script: 'cat versionTags |tail -1', returnStdout: true
    return tag
-
-
 }
