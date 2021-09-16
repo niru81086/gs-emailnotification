@@ -67,10 +67,8 @@
 /*            post {
                 success {
                          recordIssues(tools: [junitParser(pattern: 'nosetests.xml')])
-                }
-               
-            }
-            */
+                }               
+            } */
         }
 // Scanning source code using sonarqube scannerand pubilsh reports to sonar server
         stage('Dev-PublishToSonarQube') {
@@ -210,6 +208,7 @@
                     success {
                         allure includeProperties: false, jdk: '', results: [[path: 'Testcases/allureReport']]
                     }
+
                 }    
         } 
             // Build and push docker images for Stage env This stage execute when there is new commit  QA branch merge to Master    
@@ -239,6 +238,12 @@
             steps {
                     // Wating for approval
                     input 'Prod deployment?'
+                    sh "chmod +x deployment/changeVariable.sh"
+                    sh "./deployment/changeVariable.sh $registry $stage-$imageName 30002 stage"
+                     sshagent(['ssh-agent']) {
+                    sh "scp -o StrictHostkeyChecking=no deployment/stage-email-notification.yaml deployment/stage-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/stage-rabbitmq-deploy.yaml -n=stage"  
+                    sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/stage-email-notification.yaml -n=stage"
             }
         }
 
