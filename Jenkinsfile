@@ -20,7 +20,7 @@
             versionTags= versiontags()
             
         }
- // This stage perform flake8 analysis when there is any new commit on dev branch dd          
+ // This stage perform flake8 analysis when there is any new commit on dev branch          
     stages {
         stage('Dev-StaticCodeAnalysis') {
             when {
@@ -29,10 +29,10 @@
             }
             agent {label 'slave'}
             steps {
-                   sh '''#!/bin/bash
+                   sh '''#!/bin/bash 
                    docker rm -f flake8
                    CONTAINER_python=$(docker run -d -t -e PYTHONUNBUFFERED=0 -w /root -v $WORKSPACE:/root  --name flake8 python:3.7-alpine /bin/sh)
-                docker exec -i $CONTAINER_python /bin/sh  -c "pip install flake8 && flake8 --exit-zero --format=pylint  RabbitMQ_Consumer/ >flake8-out.txt"
+                   docker exec -i $CONTAINER_python /bin/sh  -c "pip install flake8 && flake8 --exit-zero --format=pylint  RabbitMQ_Consumer/ >flake8-out.txt"
                        #python3.7 -m virtualenv my-venv 
                         #source  my-venv/bin/activate
                         #ip install flake8
@@ -46,7 +46,7 @@
         stage('Dev-UnitTest') {
             when {
                 branch 'dev'
-             beforeAgent true
+                beforeAgent true
             }
             agent {label 'slave'}
             options { skipDefaultCheckout() }
@@ -108,7 +108,7 @@
             steps {              
                   //calling fucntion to build and push docker images
                 imageBuild(dev,imageName)
-                withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+                    withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                      pushToImage(registry,dev,imageName, dockerUser, dockerPassword)
                      deleteImages(registry,dev,imageName)
                 }
@@ -145,7 +145,7 @@
                         dockerQAImage.push('${BUILD_NUMBER}')
                     }
                 } */
-              
+           // need to docker images scanning from scan
                     imageBuild(qa,imageName)
                     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                         pushToImage(registry,qa,imageName, dockerUser, dockerPassword)
@@ -238,8 +238,9 @@
             }
                                     
             steps {
-                        // waiting for approval        
+                        // send email that wating for approval       
                 input 'Prod deployment?'
+            
                         // deploy on production
                      //calling 
             }        
