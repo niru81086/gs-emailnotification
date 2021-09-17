@@ -169,7 +169,7 @@
 // define function to build docker images
 void imageBuild(env,imageName) {
 
-    sh "docker build --rm -t $registry/$imageName:${BUILD_NUMBER} --pull --no-cache . -f $imageName'Dockerfile'"
+    sh "docker build --rm -t $registry/$env-$imageName:${BUILD_NUMBER} --pull --no-cache . -f $imageName'Dockerfile'"
     echo "Image build complete"
 }
 
