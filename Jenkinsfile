@@ -12,7 +12,7 @@
             imageName = "email-notification"
             qa= 'qa'
             stage= 'stage'
-            dev= 'dev'
+            dev= 'dev-'
             blank= ''
             registryCredentials = "Nexus"
             registry = "192.168.0.5:8050"
@@ -169,7 +169,7 @@
 // define function to build docker images
 void imageBuild(env,imageName) {
 
-    sh "docker build --rm -t $registry/$env-$imageName:${BUILD_NUMBER} --pull --no-cache . -f $imageName'Dockerfile'"
+    sh "docker build --rm -t $registry/$env$imageName:${BUILD_NUMBER} --pull --no-cache . -f $imageName'Dockerfile'"
     echo "Image build complete"
 }
 
