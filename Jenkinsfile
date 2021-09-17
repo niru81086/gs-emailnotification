@@ -108,7 +108,7 @@
             options { skipDefaultCheckout() }
                        
             steps {              
-                  //calling fucntion to build and push docker images
+                  //calling fucntion to build and push docker imagesjfjfj
                 imageBuild(dev,imageName)
                     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                      pushToImage(registry,dev,imageName, dockerUser, dockerPassword)
