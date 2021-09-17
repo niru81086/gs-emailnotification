@@ -111,8 +111,7 @@
                //     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                  //    pushToImage(registry,dev,imageName, dockerUser, dockerPassword)
                    //  deleteImages(registry,dev,imageName)
-                   echo "
-                   hello"
+                   echo "hello"
                 }
             }
 
