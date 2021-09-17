@@ -1,0 +1,30 @@
+version: "3.3"
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    volumes:
+            - /home/ubuntu/rabiitdata:/var/lib/rabbitmq:rw
+    ports:
+      - 15672:15672
+      - 5672:5672  
+
+  email-consumer:
+    build:
+     context: .
+     dockerfile: email-consumer
+    container_name: email-consumer
+    ports:
+      - "8089:8089"
+    depends_on:
+      - rabbitmq
+
+  email-producer:
+    build: 
+     context: .
+     dockerfile: email-producer
+    container_name: email-producer
+    ports:
+      - "8000:8000"
+    depends_on:
+      - rabbitmq
