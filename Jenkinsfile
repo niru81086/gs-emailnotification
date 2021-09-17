@@ -112,7 +112,7 @@
                  //    pushToImage(registry,dev,imageName, dockerUser, dockerPassword)
                    //  deleteImages(registry,dev,imageName)
                    echo "hello"
-                }
+               // }
             }
 
         }
