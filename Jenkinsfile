@@ -168,9 +168,13 @@
 
 // define function to build docker images
 void imageBuild(env,imageName) {
+    if (env == 'dev'){
+        sh "docker build --rm -t $registry/$env$imageName:${BUILD_NUMBER} --pull --no-cache . -f $imageName'Dockerfile'"
+        echo "Image build complete"
+    }else {
 
-    sh "docker build --rm -t $registry/$env$imageName:${BUILD_NUMBER} --pull --no-cache . -f $imageName'Dockerfile'"
-    echo "Image build complete"
+        echo "masteer"
+    }
 }
 
 // define function to push imagesa
