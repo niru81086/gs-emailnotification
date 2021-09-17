@@ -178,16 +178,16 @@ void pushToImage(registry,env,imageName, dockerUser, dockerPassword) {
     
     sh "docker login $registry -u $dockerUser -p $dockerPassword" 
     //sh "docker tag $env-$imageName:${BUILD_NUMBER} $registry/$env-$imageName:${BUILD_NUMBER}"
-    sh "docker tag $registry/$env-$imageName:${BUILD_NUMBER} $registry/$env-$imageName:latest"
-    sh "docker push $registry/$env-$imageName:${BUILD_NUMBER}"
-    echo "Image Push $registry/$env-$imageName:${BUILD_NUMBER} cpmoleted"
-    sh "docker push $registry/$env-$imageName:latest"
-    echo "Image Push $registry/$env-$imageName:latest cpmoleted"
+    sh "docker tag $registry/$env$imageName:${BUILD_NUMBER} $registry/$env$imageName:latest"
+    sh "docker push $registry/$env$imageName:${BUILD_NUMBER}"
+    echo "Image Push $registry/$env$imageName:${BUILD_NUMBER} cpmoleted"
+    sh "docker push $registry/$env$imageName:latest"
+    echo "Image Push $registry/$env$imageName:latest cpmoleted"
     
 }
 void deleteImages(registry,env,imageName) {
-    sh "docker rmi $registry/$env-$imageName:latest"
-    sh "docker rmi $registry/$env-$imageName:${BUILD_NUMBER}"
+    sh "docker rmi $registry/$env$imageName:latest"
+    sh "docker rmi $registry/$env$imageName:${BUILD_NUMBER}"
     echo "Images deleted"
     
 }   
