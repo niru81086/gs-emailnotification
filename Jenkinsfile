@@ -19,7 +19,7 @@
             dockerStageImage = ''
             dockerQAImage = ''
             versionTags= versiontags()
-            build_Number= '$BUILD_NUMBER'
+            Tags= '$BUILD_NUMBER'
             
         }
             // This stage perform flake8 analysis when there is any new commit on dev branch          
