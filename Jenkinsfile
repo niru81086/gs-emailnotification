@@ -107,10 +107,12 @@
                        
             steps {              
                   //calling fucntion to build and push docker images
-                imageBuild(dev,imageName)
-                    withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-                     pushToImage(registry,dev,imageName, dockerUser, dockerPassword)
-                     deleteImages(registry,dev,imageName)
+             //   imageBuild(dev,imageName)
+               //     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+                 //    pushToImage(registry,dev,imageName, dockerUser, dockerPassword)
+                   //  deleteImages(registry,dev,imageName)
+                   echo "
+                   hello"
                 }
             }
 
@@ -122,7 +124,7 @@
             }
             steps {
                  sh "chmod +x deployment/changeVariable.sh"
-                     sh "./deployment/changeVariable.sh $registry $dev-$imageName $BUILD_NUMBER 30000 dev"
+                     sh "./deployment/changeVariable.sh $registry $dev-$imageName $BUILD_NUMBER 30009 dev"
                      sshagent(['ssh-agent']) {
                     sh "scp -o StrictHostkeyChecking=no deployment/dev-email-notification.yaml deployment/dev-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/dev-rabbitmq-deploy.yaml -n=dev"  
