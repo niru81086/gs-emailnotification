@@ -13,6 +13,7 @@
             qa= 'qa'
             stage= 'stage'
             dev= 'dev'
+            blank= ''
             registryCredentials = "Nexus"
             registry = "192.168.0.5:8050"
             dockerStageImage = ''
@@ -143,10 +144,10 @@
                                    
             steps {              
                   //calling fucntion to build and push docker imagesjfjfj
-                imageBuild(imageName)
+                imageBuild('',imageName)
                     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-                     pushToImage(registry,imageName, dockerUser, dockerPassword)
-                    deleteImages(registry,imageName)
+                     pushToImage(registry,'',imageName, dockerUser, dockerPassword)
+                    deleteImages(registry,'',imageName)
                    
                 }
             }
