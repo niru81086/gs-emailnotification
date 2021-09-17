@@ -133,6 +133,27 @@
                 }
             }
         }
+
+        stage('BuildDockerImage') {
+            when {
+                branch 'master'
+             beforeAgent true
+            }
+            agent {label 'slave'}
+                                   
+            steps {              
+                  //calling fucntion to build and push docker imagesjfjfj
+                imageBuild(imageName)
+                    withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+                     pushToImage(registry,imageName, dockerUser, dockerPassword)
+                    deleteImages(registry,imageName)
+                   
+                }
+            }
+
+        }
+
+
     }    
  // This post stage run always and send email wih job status   
         post {
@@ -145,14 +166,14 @@
 }
 
 // define function to build docker images
-void imageBuild(env,imageName) {
+void imageBuild(imageName,env) {
 
-    sh "docker build --rm -t $registry/$env-$imageName:${BUILD_NUMBER} --pull --no-cache . -f $imageName'Dockerfile'"
+    sh "docker build --rm -t $registry/$imageName:${BUILD_NUMBER} --pull --no-cache . -f $imageName'Dockerfile'"
     echo "Image build complete"
 }
 
 // define function to push imagesa
-void pushToImage(registry,env,imageName, dockerUser, dockerPassword) {
+void pushToImage(registry,imageName, dockerUser, dockerPassword,env) {
     
     sh "docker login $registry -u $dockerUser -p $dockerPassword" 
     //sh "docker tag $env-$imageName:${BUILD_NUMBER} $registry/$env-$imageName:${BUILD_NUMBER}"
