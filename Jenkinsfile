@@ -109,12 +109,12 @@
                        
             steps {              
                   //calling fucntion to build and push docker images
-             //   imageBuild(dev,imageName)
-               //     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-                 //    pushToImage(registry,dev,imageName, dockerUser, dockerPassword)
-                   //  deleteImages(registry,dev,imageName)
-                   echo "hello"
-               // }
+                imageBuild(dev,imageName)
+                    withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+                     pushToImage(registry,dev,imageName, dockerUser, dockerPassword)
+                    deleteImages(registry,dev,imageName)
+                   
+                }
             }
 
         }
