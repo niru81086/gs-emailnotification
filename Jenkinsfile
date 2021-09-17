@@ -13,11 +13,13 @@
             qa= 'qa'
             stage= 'stage'
             dev= 'dev-'
+            blank= ''
             registryCredentials = "Nexus"
             registry = "192.168.0.5:8050"
             dockerStageImage = ''
             dockerQAImage = ''
             versionTags= versiontags()
+            build_Number= '$BUILD_NUMBER'
             
         }
             // This stage perform flake8 analysis when there is any new commit on dev branch          
@@ -109,10 +111,10 @@
                        
             steps {              
                   //calling fucntion to build and push docker imagesjfjfj
-                imageBuild(dev,imageName)
+                imageBuild(dev,imageName,build_Number)
                     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-                     pushToImage(registry,dev,imageName, dockerUser, dockerPassword)
-                    deleteImages(registry,dev,imageName)
+                     pushToImage(registry,dev,imageName, dockerUser, dockerPassword,build_Number)
+                    deleteImages(registry,dev,imageName,build_Number)
                    
                 }
             }
@@ -136,17 +138,17 @@
 
         stage('BuildDockerImage') {
             when {
-                branch 'master'
+                branch 'main'
              beforeAgent true
             }
             agent {label 'slave'}
                                    
             steps {              
                   //calling fucntion to build and push docker imagesjfjfj
-                imageBuild(imageName)
+                imageBuild('',imageName,versionTags)
                     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-                     pushToImage(registry,imageName, dockerUser, dockerPassword)
-                    deleteImages(registry,imageName)
+                     pushToImage(registry,'',imageName, dockerUser, dockerPassword,versionTags)
+                    deleteImages(registry,'',imageName,versionTags)
                    
                 }
             }
@@ -166,27 +168,27 @@
 }
 
 // define function to build docker images
-void imageBuild(env,imageName) {
-
-    sh "docker build --rm -t $registry/$env$imageName:${BUILD_NUMBER} --pull --no-cache . -f $imageName'Dockerfile'"
+void imageBuild(env,imageName,Tags) {
+    
+    sh "docker build --rm -t $registry/$env$imageName:$Tags --pull --no-cache . -f $imageName'Dockerfile'"
     echo "Image build complete"
 }
 
 // define function to push imagesa
-void pushToImage(registry,env,imageName, dockerUser, dockerPassword) {
+void pushToImage(registry,env,imageName, dockerUser, dockerPassword,Tags) {
     
     sh "docker login $registry -u $dockerUser -p $dockerPassword" 
     //sh "docker tag $env-$imageName:${BUILD_NUMBER} $registry/$env-$imageName:${BUILD_NUMBER}"
-    sh "docker tag $registry/$env$imageName:${BUILD_NUMBER} $registry/$env$imageName:latest"
-    sh "docker push $registry/$env$imageName:${BUILD_NUMBER}"
-    echo "Image Push $registry/$env$imageName:${BUILD_NUMBER} cpmoleted"
-    sh "docker push $registry/$env$imageName:latest"
-    echo "Image Push $registry/$env$imageName:latest cpmoleted"
+    //sh "docker tag $registry/$env$imageName:$Tags $registry/$env$imageName:latest"
+    sh "docker push $registry/$env$imageName:$Tags"
+    echo "Image Push $registry/$env$imageName:$Tags cpmoleted"
+    //sh "docker push $registry/$env$imageName:latest"
+    //echo "Image Push $registry/$env$imageName:latest cpmoleted"
     
 }
-void deleteImages(registry,env,imageName) {
-    sh "docker rmi $registry/$env$imageName:latest"
-    sh "docker rmi $registry/$env$imageName:${BUILD_NUMBER}"
+void deleteImages(registry,env,imageName,Tags) {
+    //sh "docker rmi $registry/$env$imageName:latest"
+    sh "docker rmi $registry/$env$imageName:$Tags"
     echo "Images deleted"
     
 }   
