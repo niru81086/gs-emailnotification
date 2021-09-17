@@ -19,6 +19,7 @@
             dockerStageImage = ''
             dockerQAImage = ''
             versionTags= versiontags()
+            Tags= '$BUILD_NUMBER'
             
         }
             // This stage perform flake8 analysis when there is any new commit on dev branch          
@@ -144,7 +145,7 @@
                                    
             steps {              
                   //calling fucntion to build and push docker imagesjfjfj
-                imageBuild('',imageName)
+                imageBuild('',imageName,Tags)
                     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                      pushToImage(registry,'',imageName, dockerUser, dockerPassword)
                     deleteImages(registry,'',imageName)
@@ -167,14 +168,10 @@
 }
 
 // define function to build docker images
-void imageBuild(env,imageName) {
-    if (env == 'dev'){
-        sh "docker build --rm -t $registry/$env$imageName:${BUILD_NUMBER} --pull --no-cache . -f $imageName'Dockerfile'"
-        echo "Image build complete"
-    }else {
-
-        echo "masteer"
-    }
+void imageBuild(env,imageName,Tags) {
+    
+    sh "docker build --rm -t $registry/$env$imageName:$Tags --pull --no-cache . -f $imageName'Dockerfile'"
+    echo "Image build complete"
 }
 
 // define function to push imagesa
