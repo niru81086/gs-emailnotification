@@ -125,7 +125,7 @@
             }
             steps {
                  sh "chmod +x deployment/changeVariable.sh"
-                     sh "./deployment/changeVariable.sh $registry $dev-$imageName $BUILD_NUMBER 30009 dev"
+                     sh "./deployment/changeVariable.sh $registry $dev-$imageName $BUILD_NUMBER 30000 dev"
                      sshagent(['ssh-agent']) {
                     sh "scp -o StrictHostkeyChecking=no deployment/dev-email-notification.yaml deployment/dev-rabbitmq-deploy.yaml ubuntu@192.168.0.20:/home/ubuntu/deployment/"
                     sh "ssh ubuntu@192.168.0.20 kubectl apply -f deployment/dev-rabbitmq-deploy.yaml -n=dev"  
