@@ -166,14 +166,14 @@
 }
 
 // define function to build docker images
-void imageBuild(imageName,env) {
+void imageBuild(env,imageName) {
 
     sh "docker build --rm -t $registry/$imageName:${BUILD_NUMBER} --pull --no-cache . -f $imageName'Dockerfile'"
     echo "Image build complete"
 }
 
 // define function to push imagesa
-void pushToImage(registry,imageName, dockerUser, dockerPassword,env) {
+void pushToImage(registry,env,imageName, dockerUser, dockerPassword) {
     
     sh "docker login $registry -u $dockerUser -p $dockerPassword" 
     //sh "docker tag $env-$imageName:${BUILD_NUMBER} $registry/$env-$imageName:${BUILD_NUMBER}"
