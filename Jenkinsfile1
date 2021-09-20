@@ -40,7 +40,12 @@
                         #deactivate
                         
                    '''    
-                }
+                } //  publishing flake8 report to Warnings Next Generation report plugin
+                post {
+                    success {
+                      recordIssues(tools: [flake8(pattern: 'flake8-out.txt')])
+                    }
+                }    
         }
 // This stage perform UiteTest when there is any new commit on dev branch
         stage('Dev-UnitTest') {
@@ -51,7 +56,7 @@
             agent {label 'slave'}
             options { skipDefaultCheckout() }
             steps {
-                /*
+                
                  sh '''#!/bin/bash -x
                         python3.7 -m virtualenv my-venv 
                         source  my-venv/bin/activate
@@ -59,18 +64,18 @@
                         pytest -v -o junit_family=xunit1 --cov=. --cov-report xml:coverage.xml --junitxml=nosetests.xml
                         deactivate
                    '''    
-                   */
+                   
 
                    echo "Perform Unit Test"
             }
 // post success publish test result using  Warnings Next Generation plugin
-/*            post {
+            post {
                 success {
                          recordIssues(tools: [junitParser(pattern: 'nosetests.xml')])
                 }
                
             }
-            */
+            
         }
 // Scanning source code using sonarqube scannerand pubilsh reports to sonar server
         stage('Dev-PublishToSonarQube') {
@@ -82,10 +87,10 @@
             sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
             -Dsonar.sources=RabbitMQ_Consumer/ \
             -Dsonar.python.flake8.reportPaths=flake8-out.txt \
-           # -Dsonar.python.xunit.reportPath=nosetests.xml \
-           # -Dsonar.python.coverage.reportPaths=coverage.xml 
-           # -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
-          # -Dsonar.python.xunit.skipDetails=false \
+            -Dsonar.python.xunit.reportPath=nosetests.xml \
+            -Dsonar.python.coverage.reportPaths=coverage.xml 
+            -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
+            -Dsonar.python.xunit.skipDetails=false \
            '''
             } 
                 // abourt job if QualityGate fail.
@@ -145,7 +150,7 @@
                         dockerQAImage.push('${BUILD_NUMBER}')
                     }
                 } */
-           // need to docker images scanning from scan
+           // Building docker image for qa and push to docker repository 
                     imageBuild(qa,imageName)
                     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                         pushToImage(registry,qa,imageName, dockerUser, dockerPassword)
@@ -163,6 +168,8 @@
             options { skipDefaultCheckout() } 
 
             steps {
+
+                    //change image name in deployment file run time.                
                     sh "chmod +x deployment/changeVariable.sh"
                      sh "./deployment/changeVariable.sh $registry $qa-$imageName 30001 qa"
                      sshagent(['ssh-agent']) {
@@ -209,7 +216,7 @@
             }           
            agent {label 'slave'}  
             steps {
-
+                    // buildin docker image for stage with versionTags
                  withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                     sh "docker login $registry -u $dockerUser -p $dockerPassword"
                     sh "docker pull $registry/$qa-$imageName:latest"
@@ -228,6 +235,7 @@
             steps {
                     // Wating for approval
                     input 'Prod deployment?'
+                    echo "deploy code similer to dev and qa deploment steps"
             }
         }
 
@@ -241,8 +249,8 @@
                         // send email that wating for approval       
                 input 'Prod deployment?'
             
-                        // deploy on production
-                     //calling 
+                    echo  "deploy code similer to dev and qa deploment steps"
+                     
             }        
         }    
     }
@@ -250,7 +258,7 @@
         post {
             always {
       //Sending email along with build details and log using shared lib function
-            // emailnotify()
+            emailnotify()
             echo "hello"
             }
         }    
@@ -286,6 +294,4 @@ void deleteImages(registry,env,imageName) {
 void versiontags() {
    def tag= sh script: 'cat versionTags |tail -1', returnStdout: true
    return tag
-
-
 }
