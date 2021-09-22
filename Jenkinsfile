@@ -110,7 +110,7 @@
             options { skipDefaultCheckout() }
                        
             steps {              
-                  //calling fucntion to build and push docker imagesjfjfj
+                  //calling fucntion to build and push docker
                 imageBuild(dev,imageName,Tags)
                     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                      pushToImage(registry,dev,imageName, dockerUser, dockerPassword,Tags)
@@ -144,7 +144,7 @@
             agent {label 'slave'}
                                    
             steps {              
-                  //calling fucntion to build and push docker imagesjfjfj
+                  //calling fucntion to build and push docker 
                 imageBuild('',imageName,versionTags)
                     withCredentials([usernamePassword(credentialsId: 'nexus-repo', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
                      pushToImage(registry,'',imageName, dockerUser, dockerPassword,versionTags)
