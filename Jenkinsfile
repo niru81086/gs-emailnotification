@@ -80,24 +80,22 @@
                 branch 'dev'
             }
             steps {
-         /*      withSonarQubeEnv('sonarserver') {
-            sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
-            -Dsonar.sources=RabbitMQ_Consumer/ \
-            -Dsonar.python.flake8.reportPaths=flake8-out.txt \
-           # -Dsonar.python.xunit.reportPath=nosetests.xml \
-           # -Dsonar.python.coverage.reportPaths=coverage.xml 
-           # -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
-          # -Dsonar.python.xunit.skipDetails=false \
-           '''
-           */
-           echo "hello"
-            } 
+                withSonarQubeEnv('sonarserver') {
+                  sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=email-notification \
+                    -Dsonar.sources=RabbitMQ_Consumer/ \
+                    -Dsonar.python.flake8.reportPaths=flake8-out.txt \
+                    -Dsonar.python.xunit.reportPath=nosetests.xml \
+                    -Dsonar.python.coverage.reportPaths=coverage.xml 
+                    -Dsonar.tests=RabbitMQ_Consumer/ConsumerEx/ \
+                    -Dsonar.python.xunit.skipDetails=false \
+                    '''           
+                } 
                 // abourt job if QualityGate fail.
-            /*
+            
                 timeout(time: 10, unit: 'MINUTES') {
                      waitForQualityGate abortPipeline: true
                 }  
-            } */
+            } 
 
         }
     // Build and push docker images for dev env
@@ -155,14 +153,13 @@
 
         }
 
-
     }    
  // This post stage run always and send email wih job status   
         post {
             always {
       //Sending email along with build details and log using shared lib function
-            // emailnotify()
-            echo "hello"
+             emailnotify()
+            
             }
         }    
 }
