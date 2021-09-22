@@ -138,7 +138,7 @@
 
         stage('BuildDockerImage') {
             when {
-                branch 'main'
+                branch 'master'
              beforeAgent true
             }
             agent {label 'slave'}
